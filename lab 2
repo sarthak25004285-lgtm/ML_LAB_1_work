@@ -1,0 +1,607 @@
+{
+ "cells": [
+  {
+   "cell_type": "markdown",
+   "metadata": {},
+   "source": [
+    "# Logistic Regression \u2014 House Price Classification\n",
+    "Dataset: `house_prices_practice.csv`"
+   ]
+  },
+  {
+   "cell_type": "markdown",
+   "id": "8c8a12d3",
+   "metadata": {
+    "id": "8c8a12d3"
+   },
+   "source": [
+    "Import the libraries used throughout this notebook."
+   ]
+  },
+  {
+   "cell_type": "code",
+   "execution_count": null,
+   "id": "b051a1b2",
+   "metadata": {
+    "execution": {
+     "iopub.execute_input": "2026-08-25T05:59:30.886936Z",
+     "iopub.status.busy": "2026-08-25T05:59:30.886728Z",
+     "iopub.status.idle": "2026-08-25T05:59:31.571242Z",
+     "shell.execute_reply": "2026-08-25T05:59:31.570840Z"
+    },
+    "id": "b051a1b2"
+   },
+   "outputs": [],
+   "source": [
+    "import pandas as pd\n",
+    "import numpy as np\n",
+    "import matplotlib.pyplot as plt"
+   ]
+  },
+  {
+   "cell_type": "markdown",
+   "id": "bcc717f0",
+   "metadata": {
+    "id": "bcc717f0"
+   },
+   "source": [
+    "Load the housing dataset into a DataFrame."
+   ]
+  },
+  {
+   "cell_type": "code",
+   "execution_count": null,
+   "id": "4e593159",
+   "metadata": {
+    "execution": {
+     "iopub.execute_input": "2026-08-25T05:59:31.572021Z",
+     "iopub.status.busy": "2026-08-25T05:59:31.571907Z",
+     "iopub.status.idle": "2026-08-25T05:59:31.574399Z",
+     "shell.execute_reply": "2026-08-25T05:59:31.574016Z"
+    },
+    "id": "4e593159"
+   },
+   "outputs": [],
+   "source": [
+    "df = pd.read_csv('house_prices_practice.csv')"
+   ]
+  },
+  {
+   "cell_type": "markdown",
+   "id": "d613db03",
+   "metadata": {
+    "id": "d613db03"
+   },
+   "source": [
+    "Preview the first 5 rows."
+   ]
+  },
+  {
+   "cell_type": "code",
+   "execution_count": null,
+   "id": "79e73c7c",
+   "metadata": {
+    "execution": {
+     "iopub.execute_input": "2026-08-25T05:59:31.575028Z",
+     "iopub.status.busy": "2026-08-25T05:59:31.574968Z",
+     "iopub.status.idle": "2026-08-25T05:59:31.580373Z",
+     "shell.execute_reply": "2026-08-25T05:59:31.580040Z"
+    },
+    "colab": {
+     "base_uri": "https://localhost:8080/",
+     "height": 206
+    },
+    "id": "79e73c7c",
+    "outputId": "459b7b1a-592e-4f6e-8c8b-f44f2ca7e21d"
+   },
+   "outputs": [],
+   "source": [
+    "df.head()"
+   ]
+  },
+  {
+   "cell_type": "markdown",
+   "id": "bd33a0b5",
+   "metadata": {
+    "id": "bd33a0b5"
+   },
+   "source": [
+    "Preview the last 5 rows."
+   ]
+  },
+  {
+   "cell_type": "code",
+   "execution_count": null,
+   "id": "e7338601",
+   "metadata": {
+    "execution": {
+     "iopub.execute_input": "2026-08-25T05:59:31.580958Z",
+     "iopub.status.busy": "2026-08-25T05:59:31.580902Z",
+     "iopub.status.idle": "2026-08-25T05:59:31.583827Z",
+     "shell.execute_reply": "2026-08-25T05:59:31.583428Z"
+    },
+    "colab": {
+     "base_uri": "https://localhost:8080/",
+     "height": 206
+    },
+    "id": "e7338601",
+    "outputId": "2a15e2c4-e150-4956-9a9f-08b3764e5df4"
+   },
+   "outputs": [],
+   "source": [
+    "df.tail()"
+   ]
+  },
+  {
+   "cell_type": "markdown",
+   "id": "d5252a03",
+   "metadata": {
+    "id": "d5252a03"
+   },
+   "source": [
+    "Check the number of rows and columns."
+   ]
+  },
+  {
+   "cell_type": "code",
+   "execution_count": null,
+   "id": "a6ce34cc",
+   "metadata": {
+    "execution": {
+     "iopub.execute_input": "2026-08-25T05:59:31.584443Z",
+     "iopub.status.busy": "2026-08-25T05:59:31.584373Z",
+     "iopub.status.idle": "2026-08-25T05:59:31.586173Z",
+     "shell.execute_reply": "2026-08-25T05:59:31.585803Z"
+    },
+    "colab": {
+     "base_uri": "https://localhost:8080/"
+    },
+    "id": "a6ce34cc",
+    "outputId": "971d8396-b25e-4379-a4d8-93cc4daab27a"
+   },
+   "outputs": [],
+   "source": [
+    "df.shape"
+   ]
+  },
+  {
+   "cell_type": "markdown",
+   "id": "2b647144",
+   "metadata": {
+    "id": "2b647144"
+   },
+   "source": [
+    "Check column data types and non-null counts."
+   ]
+  },
+  {
+   "cell_type": "code",
+   "execution_count": null,
+   "id": "88247c49",
+   "metadata": {
+    "execution": {
+     "iopub.execute_input": "2026-08-25T05:59:31.586751Z",
+     "iopub.status.busy": "2026-08-25T05:59:31.586684Z",
+     "iopub.status.idle": "2026-08-25T05:59:31.589631Z",
+     "shell.execute_reply": "2026-08-25T05:59:31.589231Z"
+    },
+    "colab": {
+     "base_uri": "https://localhost:8080/"
+    },
+    "id": "88247c49",
+    "outputId": "25e34cc3-573f-4d65-e861-0254bf565959"
+   },
+   "outputs": [],
+   "source": [
+    "df.info()"
+   ]
+  },
+  {
+   "cell_type": "markdown",
+   "id": "0ebdc445",
+   "metadata": {
+    "id": "0ebdc445"
+   },
+   "source": [
+    "Get summary statistics (mean, min, max, etc.) for every numeric column."
+   ]
+  },
+  {
+   "cell_type": "code",
+   "execution_count": null,
+   "id": "bcfcda8a",
+   "metadata": {
+    "execution": {
+     "iopub.execute_input": "2026-08-25T05:59:31.590167Z",
+     "iopub.status.busy": "2026-08-25T05:59:31.590115Z",
+     "iopub.status.idle": "2026-08-25T05:59:31.596792Z",
+     "shell.execute_reply": "2026-08-25T05:59:31.596462Z"
+    },
+    "colab": {
+     "base_uri": "https://localhost:8080/",
+     "height": 300
+    },
+    "id": "bcfcda8a",
+    "outputId": "bb07e99c-435a-412c-8065-babea469d663"
+   },
+   "outputs": [],
+   "source": [
+    "df.describe()"
+   ]
+  },
+  {
+   "cell_type": "markdown",
+   "id": "360c6eaf",
+   "metadata": {
+    "id": "360c6eaf"
+   },
+   "source": [
+    "Check for missing values in each column."
+   ]
+  },
+  {
+   "cell_type": "code",
+   "execution_count": null,
+   "id": "e7917bdf",
+   "metadata": {
+    "execution": {
+     "iopub.execute_input": "2026-08-25T05:59:31.597349Z",
+     "iopub.status.busy": "2026-08-25T05:59:31.597295Z",
+     "iopub.status.idle": "2026-08-25T05:59:31.599112Z",
+     "shell.execute_reply": "2026-08-25T05:59:31.598733Z"
+    },
+    "colab": {
+     "base_uri": "https://localhost:8080/"
+    },
+    "id": "e7917bdf",
+    "outputId": "1ced1b55-6ed1-4bb6-c9d4-59855b0fc98b"
+   },
+   "outputs": [],
+   "source": [
+    "print(df.isnull().sum())"
+   ]
+  },
+  {
+   "cell_type": "markdown",
+   "id": "421f4434",
+   "metadata": {
+    "id": "421f4434"
+   },
+   "source": [
+    "Check for duplicate rows."
+   ]
+  },
+  {
+   "cell_type": "code",
+   "execution_count": null,
+   "id": "d3e19f04",
+   "metadata": {
+    "execution": {
+     "iopub.execute_input": "2026-08-25T05:59:31.599719Z",
+     "iopub.status.busy": "2026-08-25T05:59:31.599667Z",
+     "iopub.status.idle": "2026-08-25T05:59:31.601441Z",
+     "shell.execute_reply": "2026-08-25T05:59:31.601119Z"
+    },
+    "colab": {
+     "base_uri": "https://localhost:8080/"
+    },
+    "id": "d3e19f04",
+    "outputId": "ab29bd6c-e247-4192-d597-ee1735090f57"
+   },
+   "outputs": [],
+   "source": [
+    "print(df.duplicated().sum())"
+   ]
+  },
+  {
+   "cell_type": "markdown",
+   "id": "df552ee7",
+   "metadata": {
+    "id": "df552ee7"
+   },
+   "source": [
+    "## Logistic Regression"
+   ]
+  },
+  {
+   "cell_type": "markdown",
+   "id": "ce6ef350",
+   "metadata": {
+    "id": "ce6ef350"
+   },
+   "source": [
+    "Create a binary target: `Expensive` = 1 if a house's price is above the median, else 0."
+   ]
+  },
+  {
+   "cell_type": "code",
+   "execution_count": null,
+   "id": "8269d91f",
+   "metadata": {
+    "execution": {
+     "iopub.execute_input": "2026-08-25T05:59:31.975430Z",
+     "iopub.status.busy": "2026-08-25T05:59:31.975373Z",
+     "iopub.status.idle": "2026-08-25T05:59:31.978421Z",
+     "shell.execute_reply": "2026-08-25T05:59:31.978091Z"
+    },
+    "colab": {
+     "base_uri": "https://localhost:8080/",
+     "height": 206
+    },
+    "id": "8269d91f",
+    "outputId": "a35b18f5-d0ec-4986-b310-1c2af2529878"
+   },
+   "outputs": [],
+   "source": [
+    "df['Expensive'] = (df['SalePrice'] > df['SalePrice'].median()).astype(int)\n",
+    "df[['SalePrice', 'Expensive']].head()"
+   ]
+  },
+  {
+   "cell_type": "markdown",
+   "id": "c5edf1bd",
+   "metadata": {
+    "id": "c5edf1bd"
+   },
+   "source": [
+    "### From Scratch (single feature: GrLivArea)"
+   ]
+  },
+  {
+   "cell_type": "markdown",
+   "id": "e273d4cd",
+   "metadata": {
+    "id": "e273d4cd"
+   },
+   "source": [
+    "Standardize `GrLivArea` again and define the sigmoid function, which squeezes any number into a 0\u20131 probability."
+   ]
+  },
+  {
+   "cell_type": "code",
+   "execution_count": null,
+   "id": "9b58f046",
+   "metadata": {
+    "execution": {
+     "iopub.execute_input": "2026-08-25T05:59:31.979034Z",
+     "iopub.status.busy": "2026-08-25T05:59:31.978959Z",
+     "iopub.status.idle": "2026-08-25T05:59:31.980815Z",
+     "shell.execute_reply": "2026-08-25T05:59:31.980480Z"
+    },
+    "id": "9b58f046"
+   },
+   "outputs": [],
+   "source": [
+    "x = df['GrLivArea'].values\n",
+    "y = df['Expensive'].values\n",
+    "\n",
+    "x_norm = (x - x.mean()) / x.std()\n",
+    "\n",
+    "def sigmoid(z):\n",
+    "    return 1 / (1 + np.exp(-z))"
+   ]
+  },
+  {
+   "cell_type": "markdown",
+   "id": "287db74f",
+   "metadata": {
+    "id": "287db74f"
+   },
+   "source": [
+    "Train with gradient descent \u2014 same update rule as linear regression, but `h(x)` is now passed through the sigmoid."
+   ]
+  },
+  {
+   "cell_type": "code",
+   "execution_count": null,
+   "id": "aaced9c7",
+   "metadata": {
+    "execution": {
+     "iopub.execute_input": "2026-08-25T05:59:31.981388Z",
+     "iopub.status.busy": "2026-08-25T05:59:31.981336Z",
+     "iopub.status.idle": "2026-08-25T05:59:31.988911Z",
+     "shell.execute_reply": "2026-08-25T05:59:31.988543Z"
+    },
+    "colab": {
+     "base_uri": "https://localhost:8080/"
+    },
+    "id": "aaced9c7",
+    "outputId": "c03e2b9b-4bb2-4cb9-91e0-5f8f96bb0513"
+   },
+   "outputs": [],
+   "source": [
+    "m = len(y)\n",
+    "theta0, theta1 = 0.0, 0.0\n",
+    "alpha = 0.1\n",
+    "iterations = 1000\n",
+    "\n",
+    "for i in range(iterations):\n",
+    "    z = theta0 + theta1 * x_norm\n",
+    "    h = sigmoid(z)\n",
+    "    error = h - y\n",
+    "    theta0 -= alpha * (1/m) * np.sum(error)\n",
+    "    theta1 -= alpha * (1/m) * np.sum(error * x_norm)\n",
+    "\n",
+    "print(\"theta0:\", theta0)\n",
+    "print(\"theta1:\", theta1)"
+   ]
+  },
+  {
+   "cell_type": "markdown",
+   "id": "8b09d192",
+   "metadata": {
+    "id": "8b09d192"
+   },
+   "source": [
+    "Plot the data points (0 = not expensive, 1 = expensive) with the fitted sigmoid curve \u2014 the logistic-regression equivalent of the best-fit line. `x` is sorted first so the curve draws smoothly left to right."
+   ]
+  },
+  {
+   "cell_type": "code",
+   "execution_count": null,
+   "id": "e02a497d",
+   "metadata": {
+    "execution": {
+     "iopub.execute_input": "2026-08-25T05:59:31.989497Z",
+     "iopub.status.busy": "2026-08-25T05:59:31.989446Z",
+     "iopub.status.idle": "2026-08-25T05:59:32.022089Z",
+     "shell.execute_reply": "2026-08-25T05:59:32.021645Z"
+    },
+    "colab": {
+     "base_uri": "https://localhost:8080/",
+     "height": 472
+    },
+    "id": "e02a497d",
+    "outputId": "dfa1ae4c-918c-4bbc-d6ab-045935756048"
+   },
+   "outputs": [],
+   "source": [
+    "x_sorted = np.sort(x)\n",
+    "x_sorted_norm = (x_sorted - x.mean()) / x.std()\n",
+    "y_curve = sigmoid(theta0 + theta1 * x_sorted_norm)\n",
+    "\n",
+    "plt.scatter(x, y, alpha=0.6)\n",
+    "plt.plot(x_sorted, y_curve, color='red')\n",
+    "plt.xlabel(\"GrLivArea\")\n",
+    "plt.ylabel(\"Expensive (0/1)\")\n",
+    "plt.title(\"Logistic Regression From Scratch\")\n",
+    "plt.show()"
+   ]
+  },
+  {
+   "cell_type": "markdown",
+   "id": "782b46cb",
+   "metadata": {
+    "id": "782b46cb"
+   },
+   "source": [
+    "### Using scikit-learn (all features)"
+   ]
+  },
+  {
+   "cell_type": "markdown",
+   "id": "454e6aad",
+   "metadata": {
+    "id": "454e6aad"
+   },
+   "source": [
+    "Separate features/target and split into train/test sets, same as the linear regression section."
+   ]
+  },
+  {
+   "cell_type": "code",
+   "execution_count": null,
+   "id": "62c45dc1",
+   "metadata": {
+    "execution": {
+     "iopub.execute_input": "2026-08-25T05:59:32.024934Z",
+     "iopub.status.busy": "2026-08-25T05:59:32.024881Z",
+     "iopub.status.idle": "2026-08-25T05:59:32.027097Z",
+     "shell.execute_reply": "2026-08-25T05:59:32.026774Z"
+    },
+    "id": "62c45dc1"
+   },
+   "outputs": [],
+   "source": [
+    "X = df.drop(['Id', 'SalePrice', 'Expensive'], axis=1)\n",
+    "y = df['Expensive']\n",
+    "\n",
+    "X_train, X_test, y_train, y_test = train_test_split(\n",
+    "    X, y, test_size=0.2, random_state=42\n",
+    ")"
+   ]
+  },
+  {
+   "cell_type": "markdown",
+   "id": "3b3d7a7a",
+   "metadata": {
+    "id": "3b3d7a7a"
+   },
+   "source": [
+    "Train a logistic regression model on the training data."
+   ]
+  },
+  {
+   "cell_type": "code",
+   "execution_count": null,
+   "id": "9d7344dc",
+   "metadata": {
+    "execution": {
+     "iopub.execute_input": "2026-08-25T05:59:32.027658Z",
+     "iopub.status.busy": "2026-08-25T05:59:32.027599Z",
+     "iopub.status.idle": "2026-08-25T05:59:32.055927Z",
+     "shell.execute_reply": "2026-08-25T05:59:32.052492Z"
+    },
+    "colab": {
+     "base_uri": "https://localhost:8080/",
+     "height": 80
+    },
+    "id": "9d7344dc",
+    "outputId": "1ed181af-3cea-4c14-ba84-dd75c460c7df"
+   },
+   "outputs": [],
+   "source": [
+    "log_model = LogisticRegression(max_iter=1000)\n",
+    "log_model.fit(X_train, y_train)"
+   ]
+  },
+  {
+   "cell_type": "markdown",
+   "id": "fc531ea2",
+   "metadata": {
+    "id": "fc531ea2"
+   },
+   "source": [
+    "Predict classes for the test houses and check accuracy."
+   ]
+  },
+  {
+   "cell_type": "code",
+   "execution_count": null,
+   "id": "b4f2a89f",
+   "metadata": {
+    "execution": {
+     "iopub.execute_input": "2026-08-25T05:59:32.056456Z",
+     "iopub.status.busy": "2026-08-25T05:59:32.056399Z",
+     "iopub.status.idle": "2026-08-25T05:59:32.059639Z",
+     "shell.execute_reply": "2026-08-25T05:59:32.059341Z"
+    },
+    "colab": {
+     "base_uri": "https://localhost:8080/"
+    },
+    "id": "b4f2a89f",
+    "outputId": "d6810f78-f6d5-4e5a-ab79-aea0a8d6ef0b"
+   },
+   "outputs": [],
+   "source": [
+    "y_pred = log_model.predict(X_test)\n",
+    "accuracy = accuracy_score(y_test, y_pred)\n",
+    "print(\"Accuracy:\", round(accuracy, 4))"
+   ]
+  }
+ ],
+ "metadata": {
+  "kernelspec": {
+   "display_name": "Python 3",
+   "language": "python",
+   "name": "python3"
+  },
+  "language_info": {
+   "codemirror_mode": {
+    "name": "ipython",
+    "version": 3
+   },
+   "file_extension": ".py",
+   "mimetype": "text/x-python",
+   "name": "python",
+   "nbconvert_exporter": "python",
+   "pygments_lexer": "ipython3",
+   "version": "3.10.12"
+  },
+  "colab": {
+   "provenance": []
+  }
+ },
+ "nbformat": 4,
+ "nbformat_minor": 5
+}
